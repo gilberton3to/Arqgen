@@ -1,26 +1,26 @@
 # Função para criar um banco de dados simples em um arquive de texto
-def add_department(arquive_name):
+def add_project(arquive_name):
     # Dados Empresa 
-    departments = [
-        # Controle de departamentos: nome/ number/ gerente
-        "Contabilidade, 008, João\n",
-        "Gestão, 001, Maria\n",
-        "Recursos Humanos, 004, Pedro\n"
+    project = [
+        # nome/ numero/ local
+        "Salao De Festas, 001, 3 andar\n",
+        "Predio Novo, 002, 4 andar\n",
+        "Reformas, 003, 5 andar\n"
     ]
     
     # Abre o arquive de texto para escrita
     with open(arquive_name, 'w', encoding='utf-8') as arquive:
-        arquive.writelines(departments)
+        arquive.writelines(project)
     
     print(f'Banco de dados {arquive_name} criado com sucesso!')
 
 # Criar o banco de dados em formato texto
-add_department('firm.txt')
+add_project('firm.txt')
 
 # Função para adicionar informações a um banco de dados simples em um arquive de texto
-def update_department(arquive_name, name, number, manager):
+def update_project(arquive_name, name, number, local):
     # Dados a serem adicionados
-    new_info = f"{name}, {number}, {manager}\n"
+    new_info = f"{name}, {number}, {local}\n"
     
     # Abre o arquive em modo de acréscimo ('a') para adicionar novas informações
     with open(arquive_name, 'a', encoding='utf-8') as arquive:
@@ -29,17 +29,17 @@ def update_department(arquive_name, name, number, manager):
     print(f'Informações de {name} adicionadas ao banco de dados com sucesso!')
 
 # Exemplo de uso
-update_department('firm.txt',"Desenvolvimento", "012", 'Ana')
+update_project('firm.txt',"Inovacao", "004", "5 andar")
 
-def show_department(arquive_name):
+def show_project(arquive_name):
     try:
         with open(arquive_name, 'r', encoding='utf-8') as arquive:
             lines = arquive.readlines()
             for line in lines:
                 # Dividindo a linha em partes e formatando a exibição
-                name, number, manager = line.strip().split(', ')
-                print(f'Nome: {name}, Numero: {number}, Gerente: {manager}')
+                name, number, local = line.strip().split(', ')
+                print(f'Nome: {name}, Numero: {number}, Local: {local}')
     except FileNotFoundError:
         print(f'O arquivo {arquive_name} não foi encontrado.')
 
-show_department('firm.txt')
+show_project('firm.txt')
