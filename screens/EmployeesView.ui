@@ -204,6 +204,30 @@ QTableWidget{color:black};</string>
       </font>
      </property>
     </column>
+    <column>
+     <property name="text">
+      <string>Formação</string>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Departamento</string>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+    </column>
    </widget>
    <widget class="QLabel" name="funcionarios">
     <property name="geometry">

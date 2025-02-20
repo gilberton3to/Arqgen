@@ -8,7 +8,7 @@ def preencher_tabela_funcionarios():
     try:
         with open('workers.txt', 'r', encoding='utf-8') as file:
             for line in file:
-                name, cpf, position, address, salary, gender, birth = line.strip().split(', ')
+                name, cpf, position, address, salary, gender, birth, formation, department = line.strip().split(', ')
                 row_position = employees.tabelafuncionarios.rowCount()
                 employees.tabelafuncionarios.insertRow(row_position)
                 employees.tabelafuncionarios.setItem(row_position, 0, QtWidgets.QTableWidgetItem(name))
@@ -18,6 +18,8 @@ def preencher_tabela_funcionarios():
                 employees.tabelafuncionarios.setItem(row_position, 4, QtWidgets.QTableWidgetItem(salary))
                 employees.tabelafuncionarios.setItem(row_position, 5, QtWidgets.QTableWidgetItem(gender))
                 employees.tabelafuncionarios.setItem(row_position, 6, QtWidgets.QTableWidgetItem(birth))
+                employees.tabelafuncionarios.setItem(row_position, 7, QtWidgets.QTableWidgetItem(formation))
+                employees.tabelafuncionarios.setItem(row_position, 8, QtWidgets.QTableWidgetItem(department))
     except FileNotFoundError:
         print("Arquivo workers.txt não encontrado.")
 
@@ -28,12 +30,13 @@ def preencher_tabela_departamentos():
     try:
         with open('department.txt', 'r', encoding='utf-8') as file:
             for line in file:
-                number, name, manager = line.strip().split(', ')
+                number, name, manager, headquarter = line.strip().split(', ')
                 row_position = departaments.tabeladepartamentos.rowCount()
                 departaments.tabeladepartamentos.insertRow(row_position)
                 departaments.tabeladepartamentos.setItem(row_position, 0, QtWidgets.QTableWidgetItem(number))
                 departaments.tabeladepartamentos.setItem(row_position, 1, QtWidgets.QTableWidgetItem(name))
                 departaments.tabeladepartamentos.setItem(row_position, 2, QtWidgets.QTableWidgetItem(manager))
+                departaments.tabeladepartamentos.setItem(row_position, 3, QtWidgets.QTableWidgetItem(headquarter))
     except FileNotFoundError:
         print("Arquivo department.txt não encontrado.")
 
@@ -44,12 +47,14 @@ def preencher_tabela_projetos():
     try:
         with open('firm.txt', 'r', encoding='utf-8') as file:
             for line in file:
-                name, number, local = line.strip().split(', ')
+                name, number, local, priority, department = line.strip().split(', ')
                 row_position = projects.tabelaprojetos.rowCount()
                 projects.tabelaprojetos.insertRow(row_position)
                 projects.tabelaprojetos.setItem(row_position, 0, QtWidgets.QTableWidgetItem(name))
                 projects.tabelaprojetos.setItem(row_position, 1, QtWidgets.QTableWidgetItem(number))
                 projects.tabelaprojetos.setItem(row_position, 2, QtWidgets.QTableWidgetItem(local))
+                projects.tabelaprojetos.setItem(row_position, 3, QtWidgets.QTableWidgetItem(priority))
+                projects.tabelaprojetos.setItem(row_position, 4, QtWidgets.QTableWidgetItem(department))
     except FileNotFoundError:
         print("Arquivo firm.txt não encontrado.")
 
@@ -66,6 +71,8 @@ def editar_funcionarios():
         employees.salario.setText(employees.tabelafuncionarios.item(row, 4).text())
         employees.genero.setText(employees.tabelafuncionarios.item(row, 5).text())
         employees.nascimento.setText(employees.tabelafuncionarios.item(row, 6).text())
+        employees.formacao.setText(employees.tabelafuncionarios.item(row, 7).text())
+        employees.departamento.setText(employees.tabelafuncionarios.item(row, 8).text())
     else:
         print("Nenhuma linha selecionada para edição.")
 
@@ -80,7 +87,9 @@ def salvar_dados_funcionarios():
             salary = employees.tabelafuncionarios.item(row, 4).text()
             gender = employees.tabelafuncionarios.item(row, 5).text()
             birth = employees.tabelafuncionarios.item(row, 6).text()
-            file.write(f"{name}, {cpf}, {cargo}, {address}, {salary}, {gender}, {birth}\n")
+            formation = employees.tabelafuncionarios.item(row, 7).text()
+            department = employees.tabelafuncionarios.item(row, 8).text()
+            file.write(f"{name}, {cpf}, {cargo}, {address}, {salary}, {gender}, {birth}, {formation}, {department}\n")
     print("Dados salvos com sucesso no arquivo workers.txt.")
     employees.adicionar.clicked.connect(adicionar_nova_linha_funcionario)
     preencher_tabela_funcionarios()  # Atualiza a tabela após salvar
@@ -96,6 +105,8 @@ def atualizar_funcionarios():
         employees.tabelafuncionarios.setItem(row, 4, QtWidgets.QTableWidgetItem(employees.salario.text()))
         employees.tabelafuncionarios.setItem(row, 5, QtWidgets.QTableWidgetItem(employees.genero.text()))
         employees.tabelafuncionarios.setItem(row, 6, QtWidgets.QTableWidgetItem(employees.nascimento.text()))
+        employees.tabelafuncionarios.setItem(row, 7, QtWidgets.QTableWidgetItem(employees.formacao.text()))
+        employees.tabelafuncionarios.setItem(row, 8, QtWidgets.QTableWidgetItem(employees.departamento.text()))
     else:
         print("Nenhuma linha selecionada para atualizar.")
         
@@ -108,6 +119,7 @@ def editar_departamentos():
         departaments.numero.setText(departaments.tabeladepartamentos.item(row, 0).text())
         departaments.nome.setText(departaments.tabeladepartamentos.item(row, 1).text())
         departaments.gerente.setText(departaments.tabeladepartamentos.item(row, 2).text())
+        departaments.sede.setText(departaments.tabeladepartamentos.item(row, 3).text())
     else:
         print("Nenhuma linha selecionada para edição.")
 
@@ -118,7 +130,8 @@ def salvar_dados_departamentos():
             number = departaments.tabeladepartamentos.item(row, 0).text()
             name = departaments.tabeladepartamentos.item(row, 1).text()
             manager = departaments.tabeladepartamentos.item(row, 2).text()
-            file.write(f"{number}, {name}, {manager}\n")
+            headquarter = departaments.tabeladepartamentos.item(row, 3).text()
+            file.write(f"{number}, {name}, {manager}, {headquarter}\n")
     print("Dados salvos com sucesso no arquivo department.txt.")
     departaments.adicionar.clicked.connect(adicionar_nova_linha_departamento)
     preencher_tabela_departamentos()  # Atualiza a tabela após salvar
@@ -130,6 +143,7 @@ def atualizar_departamentos():
         departaments.tabeladepartamentos.setItem(row, 0, QtWidgets.QTableWidgetItem(departaments.numero.text()))
         departaments.tabeladepartamentos.setItem(row, 1, QtWidgets.QTableWidgetItem(departaments.nome.text()))
         departaments.tabeladepartamentos.setItem(row, 2, QtWidgets.QTableWidgetItem(departaments.gerente.text()))
+        departaments.tabeladepartamentos.setItem(row, 3, QtWidgets.QTableWidgetItem(departaments.sede.text()))
     else:
         print("Nenhuma linha selecionada para atualizar.")
 
@@ -142,6 +156,8 @@ def editar_projetos():
         projects.codigo.setText(projects.tabelaprojetos.item(row, 0).text())
         projects.nome.setText(projects.tabelaprojetos.item(row, 1).text())
         projects.local.setText(projects.tabelaprojetos.item(row, 2).text())
+        projects.prioridade.setText(projects.tabelaprojetos.item(row, 3).text())
+        projects.departamento.setText(projects.tabelaprojetos.item(row, 4).text())
     else:
         print("Nenhuma linha selecionada para edição.")
 
@@ -152,7 +168,9 @@ def salvar_dados_projetos():
             code = projects.tabelaprojetos.item(row, 0).text()
             name = projects.tabelaprojetos.item(row, 1).text()
             local = projects.tabelaprojetos.item(row, 2).text()
-            file.write(f"{code}, {name}, {local}\n")
+            priority = projects.tabelaprojetos.item(row, 3).text()
+            department = projects.tabelaprojetos.item(row, 4).text()
+            file.write(f"{code}, {name}, {local}, {priority}, {department}\n")
     print("Dados salvos com sucesso no arquivo firm.txt.")
     projects.adicionar.clicked.connect(adicionar_nova_linha_projeto)
     preencher_tabela_projetos()  # Atualiza a tabela após salvar
@@ -164,6 +182,8 @@ def atualizar_projetos():
         projects.tabelaprojetos.setItem(row, 0, QtWidgets.QTableWidgetItem(projects.codigo.text()))
         projects.tabelaprojetos.setItem(row, 1, QtWidgets.QTableWidgetItem(projects.nome.text()))
         projects.tabelaprojetos.setItem(row, 2, QtWidgets.QTableWidgetItem(projects.local.text()))
+        projects.tabelaprojetos.setItem(row, 3, QtWidgets.QTableWidgetItem(projects.prioridade.text()))
+        projects.tabelaprojetos.setItem(row, 4, QtWidgets.QTableWidgetItem(projects.departamento.text()))
     else:
         print("Nenhuma linha selecionada para atualizar.")
         

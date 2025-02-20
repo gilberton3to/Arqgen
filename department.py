@@ -1,45 +1,47 @@
-# Função para criar um banco de dados simples em um arquive de texto
-def add_department(arquive_name):
-    # Dados Empresa 
-    departments = [
-        # Controle de departamentos: nome/ number/ gerente
-        "Contabilidade, 008, João\n",
-        "Gestão, 001, Maria\n",
-        "Recursos Humanos, 004, Pedro\n"
+# Função para criar um banco de dados simples em um arquivo de texto
+
+def add_department(arquivo_nome):
+    # Dados da empresa
+    departamentos = [
+        # Controle de departamentos: nome / number / gerente / sede
+        "01, Urbanismo, 088.000.903-01, Fortaleza\n",
+        "02, Paisagismo, 023.000.203-03, Fortaleza\n"
     ]
+
+    # Abre o arquivo de texto para escrita
+    with open(arquivo_nome, 'w', encoding='utf-8') as arquivo:
+        arquivo.writelines(departamentos)
     
-    # Abre o arquive de texto para escrita
-    with open(arquive_name, 'w', encoding='utf-8') as arquive:
-        arquive.writelines(departments)
-    
-    print(f'Banco de dados {arquive_name} criado com sucesso!')
+    print(f'Banco de dados {arquivo_nome} criado com sucesso!')
 
 # Criar o banco de dados em formato texto
-add_department('departament.txt')
+add_department('department.txt')
 
-# Função para adicionar informações a um banco de dados simples em um arquive de texto
-def update_department(arquive_name, name, number, manager):
+# Função para adicionar informações a um banco de dados simples em um arquivo de texto
+def update_department(arquivo_nome, number, name, manager, headquarter):
     # Dados a serem adicionados
-    new_info = f"{name}, {number}, {manager}\n"
+    new_info = f"{number}, {name}, {manager}, {headquarter}\n"
     
-    # Abre o arquive em modo de acréscimo ('a') para adicionar novas informações
-    with open(arquive_name, 'a', encoding='utf-8') as arquive:
-        arquive.write(new_info)
+    # Abre o arquivo em modo de acréscimo ('a') para adicionar novas informações
+    with open(arquivo_nome, 'a', encoding='utf-8') as arquivo:
+        arquivo.write(new_info)
     
     print(f'Informações de {name} adicionadas ao banco de dados com sucesso!')
 
 # Exemplo de uso
-update_department('departament.txt',"Desenvolvimento", "012", 'Ana')
+update_department('department.txt', "01", "Urbanismo", '088.000.903-01', "Fortaleza")
 
-def show_department(arquive_name):
+# Função para exibir os departamentos
+def show_department(arquivo_nome):
     try:
-        with open(arquive_name, 'r', encoding='utf-8') as arquive:
-            lines = arquive.readlines()
-            for line in lines:
+        with open(arquivo_nome, 'r', encoding='utf-8') as arquivo:
+            linhas = arquivo.readlines()
+            for linha in linhas:
                 # Dividindo a linha em partes e formatando a exibição
-                name, number, manager = line.strip().split(', ')
-                print(f'Nome: {name}, Numero: {number}, Gerente: {manager}')
+                number, name, manager, headquarter = linha.strip().split(', ')
+                print(f'Numero: {number}, Nome: {name}, Gerente: {manager}, Sede: {headquarter}')
     except FileNotFoundError:
-        print(f'O arquivo {arquive_name} não foi encontrado.')
+        print(f'O arquivo {arquivo_nome} não foi encontrado.')
 
-show_department('departament.txt')
+# Exibir os departamentos
+show_department('department.txt')

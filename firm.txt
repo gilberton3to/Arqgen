@@ -1,3 +1,3 @@
-0001, MASP, São Paulo
-0002, BS Design, Fortaleza
-0003, WSTC, Fortaleza
+0001, MASP, São Paulo, 4, 01
+0002, BS Design, Fortaleza, 1, 01
+0003, WSTC, Fortaleza, 2, 02

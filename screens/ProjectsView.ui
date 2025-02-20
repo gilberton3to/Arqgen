@@ -81,7 +81,7 @@ QTableWidget{color:black};</string>
      <number>49</number>
     </attribute>
     <attribute name="horizontalHeaderDefaultSectionSize">
-     <number>245</number>
+     <number>147</number>
     </attribute>
     <attribute name="horizontalHeaderHighlightSections">
      <bool>false</bool>
@@ -121,6 +121,30 @@ QTableWidget{color:black};</string>
      <property name="font">
       <font>
        <family>SF Pro</family>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Prioridade(1~5)</string>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>Departamento</string>
+     </property>
+     <property name="font">
+      <font>
        <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>

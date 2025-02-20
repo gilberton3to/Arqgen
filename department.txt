@@ -1,3 +1,2 @@
-01, Urbanismo, Gil
-02, Paisagismo, Gil
-
+01, Urbanismo, 08800090301, Fortaleza
+02, Paisagismo, 02300020303, Fortaleza
