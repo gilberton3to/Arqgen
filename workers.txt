@@ -1,3 +1,0 @@
-Gil, 088.000.903-01, Gerente, Fortaleza, 30.000, Masculino, 21/09/2002, Superior, 1
-Leo, 073.000.403-02, Analista, Fortaleza, 9.800, Masculino, 16/09/2002, Ensino Médio, 1
-Ingrid, 023.000.203-03, Supervisor, Fortaleza, 12.500, Feminino, 30/05/2000, Superior, 2

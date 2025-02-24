@@ -1,62 +1,260 @@
 from PyQt5 import uic, QtWidgets
 import sys
+from databaseconnect import hostname, database, username, pwd, port_id
+import psycopg2
+import psycopg2.extras
 
-# Função para preencher a tabela de funcionários com os dados do arquivo
+# Função para conectar ao banco de dados
+def connect_db():
+    try:
+        conn = psycopg2.connect(
+            dbname=database,
+            user=username,
+            password=pwd,
+            host=hostname,
+            port=port_id
+        )
+        return conn
+    except Exception as error:
+        print("Erro ao conectar ao banco de dados:", error)
+        return None
+
+############################################# FUNCIONÁRIOS
+
+# Função para preencher a tabela de funcionários com os dados do banco de dados
 def preencher_tabela_funcionarios():
-    employees.tabelafuncionarios.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
-    employees.tabelafuncionarios.setRowCount(0)  # Limpa a tabela antes de adicionar novas linhas
-    try:
-        with open('workers.txt', 'r', encoding='utf-8') as file:
-            for line in file:
-                name, cpf, position, address, salary, gender, birth, formation, department = line.strip().split(', ')
-                row_position = employees.tabelafuncionarios.rowCount()
-                employees.tabelafuncionarios.insertRow(row_position)
-                employees.tabelafuncionarios.setItem(row_position, 0, QtWidgets.QTableWidgetItem(name))
-                employees.tabelafuncionarios.setItem(row_position, 1, QtWidgets.QTableWidgetItem(cpf))
-                employees.tabelafuncionarios.setItem(row_position, 2, QtWidgets.QTableWidgetItem(position))
-                employees.tabelafuncionarios.setItem(row_position, 3, QtWidgets.QTableWidgetItem(address))
-                employees.tabelafuncionarios.setItem(row_position, 4, QtWidgets.QTableWidgetItem(salary))
-                employees.tabelafuncionarios.setItem(row_position, 5, QtWidgets.QTableWidgetItem(gender))
-                employees.tabelafuncionarios.setItem(row_position, 6, QtWidgets.QTableWidgetItem(birth))
-                employees.tabelafuncionarios.setItem(row_position, 7, QtWidgets.QTableWidgetItem(formation))
-                employees.tabelafuncionarios.setItem(row_position, 8, QtWidgets.QTableWidgetItem(department))
-    except FileNotFoundError:
-        print("Arquivo workers.txt não encontrado.")
+    conn = connect_db()
+    if conn:
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("SELECT * FROM employee")
+                funcionarios = cur.fetchall()
 
-# Função para preencher a tabela de departamentos com os dados do arquivo
+                employees.tabelafuncionarios.setRowCount(0)  # Limpa a tabela
+                for funcionario in funcionarios:
+                    row_position = employees.tabelafuncionarios.rowCount()
+                    employees.tabelafuncionarios.insertRow(row_position)
+                    employees.tabelafuncionarios.setItem(row_position, 0, QtWidgets.QTableWidgetItem(funcionario['name']))
+                    employees.tabelafuncionarios.setItem(row_position, 1, QtWidgets.QTableWidgetItem(funcionario['cpf']))
+                    employees.tabelafuncionarios.setItem(row_position, 2, QtWidgets.QTableWidgetItem(funcionario['role']))
+                    employees.tabelafuncionarios.setItem(row_position, 3, QtWidgets.QTableWidgetItem(funcionario['address']))
+                    employees.tabelafuncionarios.setItem(row_position, 4, QtWidgets.QTableWidgetItem(str(funcionario['salary'])))
+                    employees.tabelafuncionarios.setItem(row_position, 5, QtWidgets.QTableWidgetItem(funcionario['gender']))
+                    employees.tabelafuncionarios.setItem(row_position, 6, QtWidgets.QTableWidgetItem(str(funcionario['birth_date'])))
+                    employees.tabelafuncionarios.setItem(row_position, 7, QtWidgets.QTableWidgetItem(funcionario['education']))
+                    employees.tabelafuncionarios.setItem(row_position, 8, QtWidgets.QTableWidgetItem(str(funcionario['department_id'])))
+        except Exception as error:
+            print("Erro ao buscar funcionários:", error)
+        finally:
+            conn.close()
+
+# Função para adicionar ou atualizar funcionários no banco de dados
+def salvar_dados_funcionarios():
+    conn = connect_db()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                for row in range(employees.tabelafuncionarios.rowCount()):
+                    name = employees.tabelafuncionarios.item(row, 0).text()
+                    cpf = employees.tabelafuncionarios.item(row, 1).text()
+                    role = employees.tabelafuncionarios.item(row, 2).text()
+                    address = employees.tabelafuncionarios.item(row, 3).text()
+                    salary = int(employees.tabelafuncionarios.item(row, 4).text())
+                    gender = employees.tabelafuncionarios.item(row, 5).text()
+                    birth_date = employees.tabelafuncionarios.item(row, 6).text()
+                    education = employees.tabelafuncionarios.item(row, 7).text()
+                    department_id = int(employees.tabelafuncionarios.item(row, 8).text())
+
+                    cur.execute('''
+                        INSERT INTO employee (name, cpf, role, address, salary, gender, birth_date, education, department_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (cpf) DO UPDATE SET
+                            name = EXCLUDED.name,
+                            role = EXCLUDED.role,
+                            address = EXCLUDED.address,
+                            salary = EXCLUDED.salary,
+                            gender = EXCLUDED.gender,
+                            birth_date = EXCLUDED.birth_date,
+                            education = EXCLUDED.education,
+                            department_id = EXCLUDED.department_id
+                    ''', (name, cpf, role, address, salary, gender, birth_date, education, department_id))
+                conn.commit()
+                print("Dados dos funcionários salvos no banco de dados.")
+        except Exception as error:
+            print("Erro ao salvar funcionários:", error)
+        finally:
+            conn.close()
+    preencher_tabela_funcionarios()  # Atualiza a tabela após salvar
+
+# Função para remover um funcionário do banco de dados
+def remover_funcionario():
+    row = employees.tabelafuncionarios.currentRow()
+    if row >= 0:
+        cpf = employees.tabelafuncionarios.item(row, 1).text()
+        conn = connect_db()
+        if conn:
+            try:
+                with conn.cursor() as cur:
+                    cur.execute("DELETE FROM employee WHERE cpf = %s", (cpf,))
+                    conn.commit()
+                    print("Funcionário removido do banco de dados.")
+            except Exception as error:
+                print("Erro ao remover funcionário:", error)
+            finally:
+                conn.close()
+        employees.tabelafuncionarios.removeRow(row)
+    else:
+        print("Nenhuma linha selecionada para remover.")
+
+############################################# DEPARTAMENTOS
+
+# Função para preencher a tabela de departamentos com os dados do banco de dados
 def preencher_tabela_departamentos():
-    departaments.tabeladepartamentos.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
-    departaments.tabeladepartamentos.setRowCount(0)
-    try:
-        with open('department.txt', 'r', encoding='utf-8') as file:
-            for line in file:
-                number, name, manager, headquarter = line.strip().split(', ')
-                row_position = departaments.tabeladepartamentos.rowCount()
-                departaments.tabeladepartamentos.insertRow(row_position)
-                departaments.tabeladepartamentos.setItem(row_position, 0, QtWidgets.QTableWidgetItem(number))
-                departaments.tabeladepartamentos.setItem(row_position, 1, QtWidgets.QTableWidgetItem(name))
-                departaments.tabeladepartamentos.setItem(row_position, 2, QtWidgets.QTableWidgetItem(manager))
-                departaments.tabeladepartamentos.setItem(row_position, 3, QtWidgets.QTableWidgetItem(headquarter))
-    except FileNotFoundError:
-        print("Arquivo department.txt não encontrado.")
+    conn = connect_db()
+    if conn:
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("SELECT * FROM department")
+                departamentos = cur.fetchall()
 
-# Função para preencher a tabela de projetos com os dados do arquivo
+                departaments.tabeladepartamentos.setRowCount(0)  # Limpa a tabela
+                for departamento in departamentos:
+                    row_position = departaments.tabeladepartamentos.rowCount()
+                    departaments.tabeladepartamentos.insertRow(row_position)
+                    departaments.tabeladepartamentos.setItem(row_position, 0, QtWidgets.QTableWidgetItem(str(departamento['number'])))
+                    departaments.tabeladepartamentos.setItem(row_position, 1, QtWidgets.QTableWidgetItem(departamento['name']))
+                    departaments.tabeladepartamentos.setItem(row_position, 2, QtWidgets.QTableWidgetItem(departamento['manager']))
+                    departaments.tabeladepartamentos.setItem(row_position, 3, QtWidgets.QTableWidgetItem(departamento['headquarters']))
+        except Exception as error:
+            print("Erro ao buscar departamentos:", error)
+        finally:
+            conn.close()
+
+# Função para adicionar ou atualizar departamentos no banco de dados
+def salvar_dados_departamentos():
+    conn = connect_db()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                for row in range(departaments.tabeladepartamentos.rowCount()):
+                    number = int(departaments.tabeladepartamentos.item(row, 0).text())
+                    name = departaments.tabeladepartamentos.item(row, 1).text()
+                    manager = departaments.tabeladepartamentos.item(row, 2).text()
+                    headquarters = departaments.tabeladepartamentos.item(row, 3).text()
+
+                    cur.execute('''
+                        INSERT INTO department (number, name, manager, headquarters)
+                        VALUES (%s, %s, %s, %s)
+                        ON CONFLICT (number) DO UPDATE SET
+                            name = EXCLUDED.name,
+                            manager = EXCLUDED.manager,
+                            headquarters = EXCLUDED.headquarters
+                    ''', (number, name, manager, headquarters))
+                conn.commit()
+                print("Dados dos departamentos salvos no banco de dados.")
+        except Exception as error:
+            print("Erro ao salvar departamentos:", error)
+        finally:
+            conn.close()
+    preencher_tabela_departamentos()  # Atualiza a tabela após salvar
+
+# Função para remover um departamento do banco de dados
+def remover_departamento():
+    row = departaments.tabeladepartamentos.currentRow()
+    if row >= 0:
+        number = departaments.tabeladepartamentos.item(row, 0).text()
+        conn = connect_db()
+        if conn:
+            try:
+                with conn.cursor() as cur:
+                    cur.execute("DELETE FROM department WHERE number = %s", (number,))
+                    conn.commit()
+                    print("Departamento removido do banco de dados.")
+            except Exception as error:
+                print("Erro ao remover departamento:", error)
+            finally:
+                conn.close()
+        departaments.tabeladepartamentos.removeRow(row)
+    else:
+        print("Nenhuma linha selecionada para remover.")
+
+############################################# PROJETOS
+
+# Função para preencher a tabela de projetos com os dados do banco de dados
 def preencher_tabela_projetos():
-    projects.tabelaprojetos.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
-    projects.tabelaprojetos.setRowCount(0)
-    try:
-        with open('firm.txt', 'r', encoding='utf-8') as file:
-            for line in file:
-                name, number, local, priority, department = line.strip().split(', ')
-                row_position = projects.tabelaprojetos.rowCount()
-                projects.tabelaprojetos.insertRow(row_position)
-                projects.tabelaprojetos.setItem(row_position, 0, QtWidgets.QTableWidgetItem(name))
-                projects.tabelaprojetos.setItem(row_position, 1, QtWidgets.QTableWidgetItem(number))
-                projects.tabelaprojetos.setItem(row_position, 2, QtWidgets.QTableWidgetItem(local))
-                projects.tabelaprojetos.setItem(row_position, 3, QtWidgets.QTableWidgetItem(priority))
-                projects.tabelaprojetos.setItem(row_position, 4, QtWidgets.QTableWidgetItem(department))
-    except FileNotFoundError:
-        print("Arquivo firm.txt não encontrado.")
+    conn = connect_db()
+    if conn:
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("SELECT * FROM firm")
+                projetos = cur.fetchall()
+
+                projects.tabelaprojetos.setRowCount(0)  # Limpa a tabela
+                for projeto in projetos:
+                    row_position = projects.tabelaprojetos.rowCount()
+                    projects.tabelaprojetos.insertRow(row_position)
+                    projects.tabelaprojetos.setItem(row_position, 0, QtWidgets.QTableWidgetItem(str(projeto['code'])))
+                    projects.tabelaprojetos.setItem(row_position, 1, QtWidgets.QTableWidgetItem(projeto['name']))
+                    projects.tabelaprojetos.setItem(row_position, 2, QtWidgets.QTableWidgetItem(projeto['location']))
+                    projects.tabelaprojetos.setItem(row_position, 3, QtWidgets.QTableWidgetItem(str(projeto['priority'])))
+                    projects.tabelaprojetos.setItem(row_position, 4, QtWidgets.QTableWidgetItem(str(projeto['department_id'])))
+        except Exception as error:
+            print("Erro ao buscar projetos:", error)
+        finally:
+            conn.close()
+
+# Função para adicionar ou atualizar projetos no banco de dados
+def salvar_dados_projetos():
+    conn = connect_db()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                for row in range(projects.tabelaprojetos.rowCount()):
+                    code = int(projects.tabelaprojetos.item(row, 0).text())
+                    name = projects.tabelaprojetos.item(row, 1).text()
+                    location = projects.tabelaprojetos.item(row, 2).text()
+                    priority = int(projects.tabelaprojetos.item(row, 3).text())
+                    department_id = int(projects.tabelaprojetos.item(row, 4).text())
+
+                    cur.execute('''
+                        INSERT INTO firm (code, name, location, priority, department_id)
+                        VALUES (%s, %s, %s, %s, %s)
+                        ON CONFLICT (code) DO UPDATE SET
+                            name = EXCLUDED.name,
+                            location = EXCLUDED.location,
+                            priority = EXCLUDED.priority,
+                            department_id = EXCLUDED.department_id
+                    ''', (code, name, location, priority, department_id))
+                conn.commit()
+                print("Dados dos projetos salvos no banco de dados.")
+        except Exception as error:
+            print("Erro ao salvar projetos:", error)
+        finally:
+            conn.close()
+    preencher_tabela_projetos()  # Atualiza a tabela após salvar
+
+# Função para remover um projeto do banco de dados
+def remover_projeto():
+    row = projects.tabelaprojetos.currentRow()
+    if row >= 0:
+        code = projects.tabelaprojetos.item(row, 0).text()
+        conn = connect_db()
+        if conn:
+            try:
+                with conn.cursor() as cur:
+                    cur.execute("DELETE FROM firm WHERE code = %s", (code,))
+                    conn.commit()
+                    print("Projeto removido do banco de dados.")
+            except Exception as error:
+                print("Erro ao remover projeto:", error)
+            finally:
+                conn.close()
+        projects.tabelaprojetos.removeRow(row)
+    else:
+        print("Nenhuma linha selecionada para remover.")
+
+
+
 
 ############################################# FUNCIONÁRIOS
 
@@ -187,6 +385,8 @@ def atualizar_projetos():
     else:
         print("Nenhuma linha selecionada para atualizar.")
         
+
+
 #############################################
 
 # Funções de logout para fechar as janelas
